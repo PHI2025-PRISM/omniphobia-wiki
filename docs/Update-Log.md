@@ -38,8 +38,8 @@
 
 3.更新了示例结构：
 
-·实现了"故事 > 主线故事 > 永别了，战争 > 章节"的四级嵌套结构<br>
-·为《永别了，战争》和《偏振光》都添加了四级嵌套菜单<br>
+·实现了"故事 > 2025.11.29 > 永别了，战争 > 章节"的四级嵌套结构<br>
+·为《永别了，战争》添加了四级嵌套菜单<br>
 ·保持了其他分类的合理层次结构
 
 4.保持了所有原有功能：
@@ -66,12 +66,17 @@
 ·为 .sidebar-header 添加了 position: sticky 和 top: 0<br>
 ·这样在滚动侧边栏时，标题和搜索框会保持可见
 
-4.[《永别了，战争》](https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter1)已添加进wiki
+4.新增故事文档<br>
+[《永别了，战争》](https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter1)
 
-5.保持了所有原有功能：
+5.新增组织文档<br>
+[残响之柩](https://phi2025-prism.github.io/omniphobia-wiki/#coffin)
+
+6.保持了所有原有功能：
 
 ·四级嵌套菜单结构<br>
 ·搜索功能<br>
 ·代码高亮<br>
 ·响应式设计
+
 
