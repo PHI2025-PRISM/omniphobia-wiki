@@ -705,7 +705,7 @@
     <!-- 主体内容区 -->
     <div class="container">
         <!-- 侧边栏导航 -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h3>文档目录</h3>
                 <button class="search-toggle" title="搜索文档">🔍</button>
@@ -770,10 +770,46 @@
                 
                 
                 // 故事分类
-                - { id: "farewell-war-chapter", title: "开始阅读章节", file: "docs/story/farewell-war-chapter.md" },
-                - { id: "farewell-war-characters", title: "开始阅读角色分析", file: "docs/story/farewell-war-characters.md" },
-                - { id: "farewell-war-setting", title: "开始阅读背景设定", file: "docs/story/farewell-war-setting.md" },
-                - { id: "polarized-light", title: "未命名故事", file: "docs/story/Polarized-Light.md" },
+                // 修改《永别了，战争》章节为外部链接
+                { 
+                    id: "farewell-war-chapter1", 
+                    title: "第一章：赫尔辛基的阴影", 
+                    file: "docs/story/farewell-war/chapter1.md",
+                    external: true,
+                    externalUrl: "https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter1"
+                },
+                { 
+                    id: "farewell-war-chapter2", 
+                    title: "第二章：空痕与回响", 
+                    file: "docs/story/farewell-war/chapter2.md",
+                    external: true,
+                    externalUrl: "https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter2"
+                },
+                { 
+                    id: "farewell-war-chapter3", 
+                    title: "第三章：以太回响里的安魂曲", 
+                    file: "docs/story/farewell-war/chapter3.md",
+                    external: true,
+                    externalUrl: "https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter3"
+                },
+                { 
+                    id: "farewell-war-chapter4", 
+                    title: "第四章：雪原上的信标", 
+                    file: "docs/story/farewell-war/chapter4.md",
+                    external: true,
+                    externalUrl: "https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter4"
+                },
+                { 
+                    id: "farewell-war-chapter5", 
+                    title: "第五章：寂静的回声", 
+                    file: "docs/story/farewell-war/chapter5.md",
+                    external: true,
+                    externalUrl: "https://phi2025-prism.github.io/phi-wiki/#farewell-war-chapter5"
+                },
+                
+                { id: "farewell-war-characters", title: "开始阅读角色分析", file: "docs/story/farewell-war-characters.md" },
+                { id: "farewell-war-setting", title: "开始阅读背景设定", file: "docs/story/farewell-war-setting.md" },
+                { id: "polarized-light", title: "未命名故事", file: "docs/story/Polarized-Light.md" },
 
                 // 物品分类
                 
@@ -804,6 +840,9 @@
         // 搜索索引和文档存储
         let searchIndex = null;
         let documents = [];
+
+        // 当前展开的主分类
+        let currentExpandedCategory = null;
 
         // 初始化函数
         document.addEventListener('DOMContentLoaded', function () {
@@ -867,12 +906,19 @@
 
             console.log("初始化完成");
         });
+        
         // 构建嵌套文档菜单
         function buildNestedDocMenu() {
             const menuContainer = document.getElementById('doc-menu');
             menuContainer.innerHTML = '';
 
-            // 定义嵌套结构
+            // 构建文档ID到文档对象的映射
+            const docMap = {};
+            docConfig.menu.forEach(doc => {
+                docMap[doc.id] = doc;
+            });
+
+            // 定义嵌套结构 - 修改《永别了，战争》结构
             const nestedStructure = {
                 "入门指南": {
                     "home": "首页",
@@ -894,7 +940,11 @@
                     "2025.11.29": {
                         "永别了，战争": {
                             "章节": {
-                                "farewell-war-chapter": "开始阅读章节"
+                                "farewell-war-chapter1": "第一章：赫尔辛基的阴影",
+                                "farewell-war-chapter2": "第二章：空痕与回响", 
+                                "farewell-war-chapter3": "第三章：以太回响里的安魂曲",
+                                "farewell-war-chapter4": "第四章：雪原上的信标",
+                                "farewell-war-chapter5": "第五章：寂静的回声"
                             },
                             "角色分析": {
                                 "farewell-war-characters": "开始阅读角色分析"
@@ -905,8 +955,7 @@
                         },
                          "未命名故事": {
                             "章节": {
-                            "polarized-light-chapter1": "第一章",
-                            "polarized-light-chapter2": "第二章",
+                            "polarized-light": "未命名故事"
                          }
                     }
                 },
@@ -951,6 +1000,7 @@
                 // 创建分类容器
                 const categoryItem = document.createElement('li');
                 categoryItem.className = 'sidebar-category';
+                categoryItem.setAttribute('data-category', category);
 
                 // 创建分类标题（可点击展开/折叠）
                 const categoryHeader = document.createElement('div');
@@ -965,24 +1015,31 @@
                 docList.className = 'category-doc-list collapsed';
 
                 // 递归添加项目
-                addItemsToMenu(docList, categoryItems, 1);
+                addItemsToMenu(docList, categoryItems, 1, docMap);
 
                 // 点击分类标题展开/折叠
                 categoryHeader.addEventListener('click', function () {
                     const isExpanded = docList.classList.contains('expanded');
+                    
+                    // 如果是展开操作，先折叠其他所有主分类
                     if (!isExpanded) {
                         collapseAllMainCategories(category);
                     }
+                    
                     if (isExpanded) {
                         docList.classList.remove('expanded');
                         docList.classList.add('collapsed');
                         categoryHeader.classList.remove('expanded');
-                        checkSidebarCollapse(); // 检查是否需要折叠侧边栏
+                        currentExpandedCategory = null;
+                        // 检查是否需要折叠侧边栏
+                        checkSidebarCollapse();
                     } else {
                         docList.classList.remove('collapsed');
                         docList.classList.add('expanded');
                         categoryHeader.classList.add('expanded');
-                        expandSidebar(); // 展开侧边栏以显示内容
+                        currentExpandedCategory = category;
+                        // 展开侧边栏
+                        expandSidebar();
                     }
                 });
 
@@ -1028,30 +1085,34 @@
             }
         }
 
-
         // 递归添加项目到菜单
-        function addItemsToMenu(container, items, level) {
+        function addItemsToMenu(container, items, level, docMap) {
             Object.entries(items).forEach(([key, value]) => {
                 // 如果值是对象，说明是子分类
                 if (typeof value === 'object' && !Array.isArray(value)) {
                     if (level === 1) {
-                        addSubcategory(container, key, value, level);
+                        addSubcategory(container, key, value, level, docMap);
                     } else if (level === 2) {
-                        addSubsubcategory(container, key, value, level);
+                        addSubsubcategory(container, key, value, level, docMap);
                     }else if (level === 3) {
-                        addSubsubsubcategory(container, key, value, level);
+                        addSubsubsubcategory(container, key, value, level, docMap);
                     }
                     // 可以继续添加更多级别，但三级通常足够
                 } 
                 // 否则是文档项
                 else {
-                    addDocumentItem(container, key, value);
+                    const doc = docMap[key];
+                    if (doc) {
+                        addDocumentItem(container, doc);
+                    } else {
+                        console.warn(`未找到文档配置: ${key}`);
+                    }
                 }
             });
         }
 
         // 添加子分类
-        function addSubcategory(container, subcategoryName, subcategoryItems, level) {
+        function addSubcategory(container, subcategoryName, subcategoryItems, level, docMap) {
             const subcategoryItem = document.createElement('li');
             subcategoryItem.className = 'subcategory';
 
@@ -1068,7 +1129,7 @@
             subcategoryDocList.className = 'subcategory-doc-list collapsed';
 
             // 递归添加子分类中的项目
-            addItemsToMenu(subcategoryDocList, subcategoryItems, level + 1);
+            addItemsToMenu(subcategoryDocList, subcategoryItems, level + 1, docMap);
 
             // 点击子分类标题展开/折叠
             subcategoryHeader.addEventListener('click', function () {
@@ -1077,12 +1138,14 @@
                     subcategoryDocList.classList.remove('expanded');
                     subcategoryDocList.classList.add('collapsed');
                     subcategoryHeader.classList.remove('expanded');
+                    // 检查是否需要折叠侧边栏
                     checkSidebarCollapse();
                 } else {
                     subcategoryDocList.classList.remove('collapsed');
                     subcategoryDocList.classList.add('expanded');
                     subcategoryHeader.classList.add('expanded');
-                     expandSidebar();
+                    // 展开侧边栏
+                    expandSidebar();
                 }
             });
 
@@ -1092,7 +1155,7 @@
         }
 
         // 添加三级子分类
-        function addSubsubcategory(container, subsubcategoryName, subsubcategoryItems, level) {
+        function addSubsubcategory(container, subsubcategoryName, subsubcategoryItems, level, docMap) {
             const subsubcategoryItem = document.createElement('li');
             subsubcategoryItem.className = 'subsubcategory';
 
@@ -1109,7 +1172,7 @@
             subsubcategoryDocList.className = 'subsubcategory-doc-list collapsed';
 
             // 递归添加子分类中的项目
-            addItemsToMenu(subsubcategoryDocList, subsubcategoryItems, level + 1);
+            addItemsToMenu(subsubcategoryDocList, subsubcategoryItems, level + 1, docMap);
 
             // 点击子分类标题展开/折叠
             subsubcategoryHeader.addEventListener('click', function () {
@@ -1118,12 +1181,14 @@
                     subsubcategoryDocList.classList.remove('expanded');
                     subsubcategoryDocList.classList.add('collapsed');
                     subsubcategoryHeader.classList.remove('expanded');
+                    // 检查是否需要折叠侧边栏
                     checkSidebarCollapse();
                 } else {
                     subsubcategoryDocList.classList.remove('collapsed');
                     subsubcategoryDocList.classList.add('expanded');
                     subsubcategoryHeader.classList.add('expanded');
-                     expandSidebar();
+                    // 展开侧边栏
+                    expandSidebar();
                 }
             });
 
@@ -1133,7 +1198,7 @@
         }
 
         // 添加四级子分类
-        function addSubsubsubcategory(container, subsubsubcategoryName, subsubsubcategoryItems, level) {
+        function addSubsubsubcategory(container, subsubsubcategoryName, subsubsubcategoryItems, level, docMap) {
             const subsubsubcategoryItem = document.createElement('li');
             subsubsubcategoryItem.className = 'subsubsubcategory';
 
@@ -1150,7 +1215,7 @@
             subsubsubcategoryDocList.className = 'subsubsubcategory-doc-list collapsed';
 
             // 递归添加子分类中的项目
-            addItemsToMenu(subsubsubcategoryDocList, subsubsubcategoryItems, level + 1);
+            addItemsToMenu(subsubsubcategoryDocList, subsubsubcategoryItems, level + 1, docMap);
 
             // 点击子分类标题展开/折叠
             subsubsubcategoryHeader.addEventListener('click', function () {
@@ -1159,11 +1224,13 @@
                     subsubsubcategoryDocList.classList.remove('expanded');
                     subsubsubcategoryDocList.classList.add('collapsed');
                     subsubsubcategoryHeader.classList.remove('expanded');
+                    // 检查是否需要折叠侧边栏
                     checkSidebarCollapse();
                 } else {
                     subsubsubcategoryDocList.classList.remove('collapsed');
                     subsubsubcategoryDocList.classList.add('expanded');
                     subsubsubcategoryHeader.classList.add('expanded');
+                    // 展开侧边栏
                     expandSidebar();
                 }
             });
@@ -1173,19 +1240,29 @@
             container.appendChild(subsubsubcategoryItem);
         }
 
-        // 添加文档项
-        function addDocumentItem(container, docId, docTitle) {
+        // 添加文档项 - 修改为支持外部链接
+        function addDocumentItem(container, doc) {
             const docListItem = document.createElement('li');
             const docLink = document.createElement('a');
-            docLink.href = '#';
-            docLink.textContent = docTitle;
-            docLink.setAttribute('data-doc', docId);
-            docLink.classList.add('doc-link');
+            
+            // 检查是否为外部链接
+            if (doc.external && doc.externalUrl) {
+                // 外部链接
+                docLink.href = doc.externalUrl;
+                docLink.target = "_blank";
+                docLink.rel = "noopener noreferrer";
+            } else {
+                // 内部链接
+                docLink.href = '#';
+                docLink.setAttribute('data-doc', doc.id);
+                docLink.classList.add('doc-link');
+            }
+            
+            docLink.textContent = doc.title;
 
             docListItem.appendChild(docLink);
             container.appendChild(docListItem);
         }
-
 
         // 设置路由
         function setupRouting() {
@@ -1206,14 +1283,16 @@
             return hash || docConfig.defaultDoc;
         }
 
-        // 设置导航事件
+        // 设置导航事件 - 修改为支持外部链接
         function setupNavigation() {
             // 文档链接点击事件
             document.addEventListener('click', function (e) {
                 if (e.target.matches('.doc-link, .nav-link')) {
                     e.preventDefault();
                     const docId = e.target.getAttribute('data-doc');
-                    navigateToDoc(docId);
+                    if (docId) {
+                        navigateToDoc(docId);
+                    }
                 }
 
                 // 搜索切换按钮点击事件
@@ -1234,9 +1313,23 @@
                 }
             });
         }
-        // 导航到文档
+        
+        // 导航到文档 - 修改为支持外部链接
         function navigateToDoc(docId) {
-            // 更新URL哈希
+            // 查找文档配置
+            const doc = docConfig.menu.find(d => d.id === docId);
+            if (!doc) {
+                console.error(`文档不存在: ${docId}`);
+                return;
+            }
+            
+            // 如果是外部链接，直接跳转
+            if (doc.external && doc.externalUrl) {
+                window.open(doc.externalUrl, '_blank');
+                return;
+            }
+
+            // 内部链接：更新URL哈希
             window.location.hash = docId;
 
             // 更新活动状态
@@ -1271,6 +1364,12 @@
             const doc = docConfig.menu.find(d => d.id === docId);
             if (!doc) {
                 showError(`文档不存在: ${docId}`);
+                return;
+            }
+
+            // 如果是外部链接，不应该调用loadDocument
+            if (doc.external) {
+                console.warn(`尝试加载外部文档: ${docId}`);
                 return;
             }
 
@@ -1402,7 +1501,7 @@
             console.log("搜索功能初始化完成");
         }
 
-        // 预加载所有文档到搜索索引
+        // 预加载所有文档到搜索索引 - 修改为跳过外部链接
         function preloadAllDocumentsForSearch() {
             console.log("开始预加载所有文档到搜索索引...");
 
@@ -1410,6 +1509,12 @@
                 // 检查是否已经添加过
                 if (documents.some(d => d.id === doc.id)) {
                     console.log(`文档已存在，跳过: ${doc.title}`);
+                    return;
+                }
+
+                // 如果是外部链接，不添加到搜索索引
+                if (doc.external) {
+                    console.log(`跳过外部链接文档: ${doc.title}`);
                     return;
                 }
 
@@ -1562,8 +1667,6 @@
             return content.length > 100 ? content.substring(0, 100) + '...' : content;
         }
 
-        
-
         // 添加文档到搜索索引
         function addDocumentToSearchIndex(docId, title, content) {
             // 检查是否已经添加过
@@ -1594,22 +1697,7 @@
             } catch (e) {
                 console.error('向搜索索引添加文档失败：', e);
             }
-        
         }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
