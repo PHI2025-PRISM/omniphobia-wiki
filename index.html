@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lunr/lunr.min.js"></script>
     <style>
         /* 基础样式 */
-        :root {
+         :root {
             --primary-color: #1a1a1a;
             --secondary-color: #3498db;
             --accent-color: #e74c3c;
@@ -40,6 +40,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            position: relative;
         }
 
         /* 头部样式 */
@@ -47,7 +48,11 @@
             background-color: var(--primary-color);
             color: white;
             padding: 1rem 2rem;
-            box-shadow: var(--border-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-shrink: 0;
         }
 
         .header-content {
@@ -95,6 +100,7 @@
             flex: 1;
             gap: 2rem;
             padding: 0 1rem;
+            min-height: 0;
         }
 
         /* 侧边栏样式 */
@@ -105,14 +111,13 @@
             box-shadow: var(--shadow);
             padding: 1.5rem;
             align-self: flex-start;
-            /* 动态扩展侧边栏 */
             max-height: calc(100vh - 200px);
             overflow-y: auto;
             position: sticky;
             top: 20px;
-            /* 过渡效果 */
             transition: max-height 0.3s ease;
             border: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .sidebar.expanded {
@@ -152,11 +157,11 @@
         .search-box {
             margin-bottom: 1.5rem;
             position: relative;
-            display: none; /* 默认隐藏 */
+            display: none;
         }
 
             .search-box.active {
-                display: block; /* 激活时显示 */
+                display: block;
             }
 
             .search-box input {
@@ -234,8 +239,10 @@
             color: var(--text-color);
             text-align: center;
             padding: 1.5rem;
-            margin-top: 2rem;
+            margin-top: auto;
             border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+            width: 100%;
         }
 
         footer a {
@@ -522,6 +529,9 @@
             box-shadow: var(--shadow);
             padding: 2rem;
             border: 1px solid var(--border-color);
+            min-width: 0;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
             .main-content h1 {
@@ -653,34 +663,236 @@
             background: var(--border-color);
         }
 
-        /* 响应式设计 */
+         /* 添加表格样式 */
+        .main-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .main-content th, .main-content td {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            color: var(--text-color);
+        }
+
+        .main-content th {
+            background-color: var(--light-color);
+            font-weight: bold;
+        }
+
+        .main-content tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .main-content tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 响应式设计 - 移动端修复 */
         @media (max-width: 768px) {
-            .container {
+            body {
+                overflow-x: hidden;
+                min-height: 100vh;
+                display: flex;
                 flex-direction: column;
             }
-
+            
+            .container {
+                flex-direction: column;
+                margin: 1rem auto;
+                padding: 0 1rem;
+                width: 100%;
+                max-width: 100%;
+                flex: 1;
+            }
+            
             .sidebar {
                 width: 100%;
-                max-height: none;
                 position: static;
+                max-height: none;
+                overflow-y: visible;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                top: auto;
+                border-radius: 8px;
             }
             
             .sidebar.expanded {
                 max-height: none;
             }
-
+            
             .header-content {
                 flex-direction: column;
                 text-align: center;
+                padding: 0.5rem 0;
             }
-
+            
+            .logo {
+                margin-bottom: 0.5rem;
+                font-size: 1.3rem;
+            }
+            
             nav ul {
-                margin-top: 1rem;
+                margin-top: 0.5rem;
                 justify-content: center;
+                flex-wrap: wrap;
             }
-
+            
             nav li {
-                margin: 0 0.75rem;
+                margin: 0 0.5rem 0.5rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+                width: 100%;
+                overflow: visible;
+            }
+            
+            .search-box.active {
+                display: block;
+            }
+            
+            .search-results {
+                position: fixed;
+                top: 50%;
+                left: 10px;
+                right: 10px;
+                max-height: 60vh;
+                transform: translateY(-50%);
+                z-index: 1000;
+            }
+            
+            .category-doc-list.expanded,
+            .subcategory-doc-list.expanded,
+            .subsubcategory-doc-list.expanded,
+            .subsubsubcategory-doc-list.expanded {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .breadcrumb {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 0.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .main-content h1 {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+            
+            .main-content h2 {
+                font-size: 1.3rem;
+            }
+            
+            .main-content h3 {
+                font-size: 1.1rem;
+            }
+            
+            .main-content p,
+            .main-content li {
+                word-break: break-word;
+            }
+            
+            .main-content pre {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* 移动端表格优化 */
+            .main-content table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .main-content th,
+            .main-content td {
+                min-width: 120px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* 针对小屏幕手机的额外优化 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 0.5rem;
+                margin: 0.5rem auto;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                padding: 0.75rem;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            nav li {
+                margin: 0 0.25rem 0.25rem;
+            }
+            
+            nav a {
+                font-size: 0.9rem;
+            }
+            
+            .breadcrumb {
+                font-size: 0.85rem;
+            }
+            
+            .main-content h1 {
+                font-size: 1.4rem;
+            }
+            
+            header {
+                padding: 0.75rem 1rem;
+            }
+            
+            footer {
+                padding: 1rem;
+            }
+        }
+        
+        /* 针对移动端滚动优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .main-content {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .category-doc-list,
+            .subcategory-doc-list,
+            .subsubcategory-doc-list,
+            .subsubsubcategory-doc-list {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* 增加触摸目标大小 */
+            .doc-link,
+            .nav-link,
+            .category-header,
+            .subcategory-header,
+            .subsubcategory-header,
+            .subsubsubcategory-header {
+                min-height: 44px;
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+        }
+        
+        /* 针对iOS的特殊处理 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                /* iOS需要特殊处理以确保100vh正确 */
+                min-height: -webkit-fill-available;
             }
         }
     </style>
@@ -695,7 +907,7 @@
                     <li><a href="#" class="nav-link" data-doc="home">首页</a></li>
                     <li><a href="#" class="nav-link" data-doc="docs">文档</a></li>
                     <li><a href="#" class="nav-link" data-doc="contributing">贡献指南</a></li>
-                    <li><a href="#" class="nav-link" data-doc="api">API</a></li>
+                    <li><a href="#" class="nav-link" data-doc="competition">竞赛</a></li>
                     <li><a href="#" class="nav-link" data-doc="about">关于</a></li>
                 </ul>
             </nav>
@@ -765,6 +977,10 @@
                 { id: "contributing", title: "贡献指南", file: "docs/contributing.md" },
                 { id: "faq", title: "常见问题", file: "docs/faq.md" },
                 { id: "about", title: "关于", file: "docs/about.md"},
+
+                //竞赛
+                { id: "competition", title: "竞赛先行页", file: "docs/competition.md"},
+                { id: "competition-preview", title: "竞赛", file: "docs/Competition-Preview.md"},
                 
                 //角色分类
                 
@@ -877,8 +1093,12 @@
 
                     return code;
                 },
-                breaks: true,
-                gfm: true
+                breaks: true, // 启用换行符支持
+                gfm: true, // 启用GitHub风格的Markdown
+                tables: true, // 启用表格支持
+                pedantic: false, // 避免过于严格的解析
+                smartLists: true, // 智能列表
+                smartypants: true // 智能标点
             });
             // 兼容性初始化高亮（优先新API）
             if (typeof hljs !== 'undefined') {
@@ -918,13 +1138,19 @@
                 docMap[doc.id] = doc;
             });
 
-            // 定义嵌套结构 - 修改《永别了，战争》结构
+            // 定义嵌套结构
             const nestedStructure = {
                 "入门指南": {
                     "home": "首页",
                     "getting-started": "快速开始",
                      "faq": "常见问题"
                 },
+
+                "竞赛": {
+                    "competition-preview": "竞赛先行页",
+                    "competition": "竞赛"
+                },
+
                 "恐惧症": {
                     "OP-0~1000": {
                         "severe-phobia": "重恐症",
@@ -937,7 +1163,7 @@
 
                 },
                 "故事": {
-                    "2025.11.29": {
+                    "2025年": {
                         "永别了，战争": {
                             "章节": {
                                 "farewell-war-chapter1": "第一章：赫尔辛基的阴影",
@@ -1240,7 +1466,7 @@
             container.appendChild(subsubsubcategoryItem);
         }
 
-        // 添加文档项 - 修改为支持外部链接
+        // 添加文档项
         function addDocumentItem(container, doc) {
             const docListItem = document.createElement('li');
             const docLink = document.createElement('a');
@@ -1283,7 +1509,7 @@
             return hash || docConfig.defaultDoc;
         }
 
-        // 设置导航事件 - 修改为支持外部链接
+        // 设置导航事件
         function setupNavigation() {
             // 文档链接点击事件
             document.addEventListener('click', function (e) {
@@ -1314,7 +1540,7 @@
             });
         }
         
-        // 导航到文档 - 修改为支持外部链接
+        // 导航到文档
         function navigateToDoc(docId) {
             // 查找文档配置
             const doc = docConfig.menu.find(d => d.id === docId);
@@ -1501,7 +1727,7 @@
             console.log("搜索功能初始化完成");
         }
 
-        // 预加载所有文档到搜索索引 - 修改为跳过外部链接
+        // 预加载所有文档到搜索索引
         function preloadAllDocumentsForSearch() {
             console.log("开始预加载所有文档到搜索索引...");
 
